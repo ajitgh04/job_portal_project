@@ -1,0 +1,82 @@
+{% extends "jobs/base.html" %}
+
+{% block title %}Find a job{% endblock %}
+
+{% block content %}
+    <section class="container py-5 py-lg-6">
+        <div class="row align-items-end g-3 mb-4 mb-lg-5">
+            <div class="col">
+                <p class="text-primary fw-semibold text-uppercase small mb-2">Explore opportunities</p>
+                <h1 class="display-5 fw-bold mb-2">Find your next role</h1>
+                <p class="text-muted-custom mb-0">Discover work that fits your skills and ambitions.</p>
+            </div>
+            <div class="col-auto">
+                <span class="badge rounded-pill text-bg-light border px-3 py-2">
+                    {{ jobs|length }} open role{{ jobs|length|pluralize }}
+                </span>
+            </div>
+        </div>
+
+        {% if jobs %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+                {% for job in jobs %}
+                    <div class="col">
+                        <article class="card job-card h-100 shadow-sm">
+                            <div class="card-body p-4 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                    <div>
+                                        <h2 class="h5 fw-bold mb-1">
+                                            <a class="link-dark link-underline-opacity-0 stretched-link" href="{% url 'jobs:job_detail' job.pk %}">
+                                                {{ job.title }}
+                                            </a>
+                                        </h2>
+                                        <p class="text-muted-custom mb-0">{{ job.company_name }}</p>
+                                    </div>
+                                    <span class="badge rounded-pill text-bg-primary-subtle text-primary-emphasis">
+                                        {{ job.get_job_type_display }}
+                                    </span>
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-3 small text-muted-custom mb-3">
+                                    <span>{{ job.location }}</span>
+                                    <span>Posted {{ job.created_at|date:"M j, Y" }}</span>
+                                </div>
+                                <p class="text-muted-custom mb-4">{{ job.description|truncatewords:24 }}</p>
+
+                                <div class="mt-auto d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                    {% if job.salary %}
+                                        <p class="fw-semibold mb-0">${{ job.salary|floatformat:0 }} <span class="small fw-normal text-muted-custom">salary</span></p>
+                                    {% else %}
+                                        <p class="small text-muted-custom mb-0">Salary not listed</p>
+                                    {% endif %}
+
+                                    {% if is_job_seeker %}
+                                        {% if job.has_applied %}
+                                            <button class="btn btn-outline-success position-relative z-1" type="button" disabled>
+                                                Applied
+                                            </button>
+                                        {% else %}
+                                            <form class="position-relative z-1" method="post" action="{% url 'jobs:apply_to_job' job.pk %}">
+                                                {% csrf_token %}
+                                                <button class="btn btn-primary" type="submit">Apply now</button>
+                                            </form>
+                                        {% endif %}
+                                    {% else %}
+                                        <a class="btn btn-outline-primary position-relative z-1" href="{% url 'jobs:job_detail' job.pk %}">
+                                            View details
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-white border rounded-4 text-center p-5">
+                <h2 class="h4 fw-bold">No jobs to show just yet</h2>
+                <p class="text-muted-custom mb-0">Please check back soon for new opportunities.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}

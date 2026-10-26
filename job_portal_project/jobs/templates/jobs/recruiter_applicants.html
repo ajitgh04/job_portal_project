@@ -1,0 +1,56 @@
+{% extends "jobs/base.html" %}
+
+{% block title %}Applicants for {{ job.title }}{% endblock %}
+
+{% block content %}
+    <section class="container py-5">
+        <a class="text-decoration-none" href="{% url 'jobs:recruiter_dashboard' %}">← Back to dashboard</a>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 my-4">
+            <div>
+                <p class="text-primary fw-semibold text-uppercase small mb-2">Applicant review</p>
+                <h1 class="h2 fw-bold mb-1">{{ job.title }}</h1>
+                <p class="text-muted-custom mb-0">{{ job.company_name }} · {{ applications|length }} applicant{{ applications|length|pluralize }}</p>
+            </div>
+            <a class="btn btn-outline-secondary" href="{% url 'jobs:recruiter_job_edit' job.pk %}">Edit posting</a>
+        </div>
+
+        {% if applications %}
+            <div class="row row-cols-1 g-3">
+                {% for application in applications %}
+                    <div class="col">
+                        <article class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-lg">
+                                        <h2 class="h5 fw-bold mb-1">{{ application.user.get_full_name|default:application.user.username }}</h2>
+                                        <a href="mailto:{{ application.user.email }}">{{ application.user.email }}</a>
+                                        <p class="small text-muted-custom mt-2 mb-0">Applied {{ application.applied_at|date:"M j, Y" }}</p>
+                                    </div>
+                                    <div class="col-lg-auto">
+                                        <form class="d-flex flex-wrap align-items-end gap-2" method="post" action="{% url 'jobs:recruiter_update_application_status' application.pk %}">
+                                            {% csrf_token %}
+                                            <div>
+                                                <label class="form-label small fw-semibold mb-1" for="status-{{ application.pk }}">Application status</label>
+                                                <select class="form-select form-select-sm" id="status-{{ application.pk }}" name="status">
+                                                    {% for value, label in status_choices %}
+                                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <button class="btn btn-sm btn-primary" type="submit">Update</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-white border rounded-4 text-center p-5">
+                <h2 class="h5 fw-bold">No applications yet</h2>
+                <p class="text-muted-custom mb-0">Applicants will appear here when job seekers apply.</p>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
